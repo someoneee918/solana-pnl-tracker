@@ -67,6 +67,7 @@ Options:
   --txs <n>       Recent transactions to read, 10 to 1000 (default 100)
   --top <n>       Tokens to list (default 20)
   --json          Print the full result as JSON
+  --version       Show version
   --help          Show this help
 
 Environment:

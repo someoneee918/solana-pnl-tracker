@@ -1,7 +1,10 @@
 #!/usr/bin/env node
+import { readFileSync } from "node:fs";
 import { c, footer, getTx, isAddress, main, parseArgs, rpc, short, table, pad } from "../lib/core.js";
 import { parseWalletTx, solUsd, tokenInfo } from "../lib/swaps.js";
 import { computePnl } from "../lib/pnl.js";
+
+const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
 
 const HELP = `solana-pnl-tracker: profit and loss for any Solana wallet, in SOL
 
@@ -12,6 +15,7 @@ Options:
   --txs <n>       Recent transactions to read, 10 to 1000 (default 100)
   --top <n>       Tokens to list (default 20)
   --json          Print the full result as JSON
+  --version       Show version
   --help          Show this help
 
 Environment:
@@ -23,7 +27,8 @@ const sol = (n, digits = 3) => (n === null || n === undefined ? c.dim("?") : (n 
 const tint = (n, text) => (n === null || n === undefined ? text : n > 0.0005 ? c.green(text) : n < -0.0005 ? c.red(text) : text);
 
 main(async () => {
-  const args = parseArgs(process.argv.slice(2), { booleans: ["json", "help"] });
+  const args = parseArgs(process.argv.slice(2), { booleans: ["json", "help", "version"] });
+  if (args.version) { console.log(`solana-pnl-tracker ${pkg.version}`); process.exit(0); }
   const wallet = args._[0];
   if (args.help || !wallet) { console.log(HELP); process.exit(args.help ? 0 : 1); }
   if (!isAddress(wallet)) throw new Error(`"${wallet}" is not a Solana address.`);

@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -34,4 +35,11 @@ test("a fractional --top is rejected", () => {
   const r = run(["--top", "2.5"]);
   assert.equal(r.status, 1);
   assert.match(r.stderr + r.stdout, /--top must be a whole number of 1 or more/);
+});
+
+test("--version prints package version and exits 0", () => {
+  const pkg = JSON.parse(readFileSync(path.join(root, "package.json"), "utf8"));
+  const r = spawnSync(process.execPath, [cli, "--version"], { encoding: "utf8" });
+  assert.equal(r.status, 0);
+  assert.match(r.stdout, new RegExp(`solana-pnl-tracker ${pkg.version}`));
 });
