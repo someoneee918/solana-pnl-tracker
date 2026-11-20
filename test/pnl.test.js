@@ -5,6 +5,7 @@ import { computePnl } from "../lib/pnl.js";
 let clock = 0;
 const buy = (mint, tokens, solSpent) => ({ type: "buy", mint, tokenAmount: tokens, quote: "SOL", quoteAmount: solSpent, time: ++clock, fee: 0.00001 });
 const sell = (mint, tokens, solGot) => ({ type: "sell", mint, tokenAmount: tokens, quote: "SOL", quoteAmount: solGot, time: ++clock, fee: 0.00001 });
+const transferOut = (mint, tokens) => ({ type: "transfer_out", mint, tokenAmount: tokens, time: ++clock });
 const near = (a, b) => assert.ok(Math.abs(a - b) < 1e-9, `${a} is not ${b}`);
 
 test("a full round trip books realized profit and nothing open", () => {
@@ -14,6 +15,25 @@ test("a full round trip books realized profit and nothing open", () => {
   assert.equal(rows[0].open, 0);
   assert.equal(totals.winRate, 100);
   near(totals.fees, 0.00002);
+});
+
+test("tokens sent away by transfer are not counted as open positions", () => {
+  const { rows, totals } = computePnl([buy("A", 100, 1), transferOut("A", 100)], { prices: new Map([["A", 0.02]]) });
+  assert.equal(rows[0].open, 0);
+  assert.equal(rows[0].openCost, 0);
+  assert.equal(rows[0].openValue, 0);
+  near(rows[0].transferredOutCost, 1);
+  near(totals.transferredOutCost, 1);
+});
+
+test("partial transfer_out leaves remaining share open at average cost", () => {
+  const { rows, totals } = computePnl([buy("A", 100, 1), sell("A", 25, 0.5), transferOut("A", 25)], { prices: new Map([["A", 0.02]]) });
+  assert.equal(rows[0].open, 50);
+  near(rows[0].openCost, 0.5);
+  near(rows[0].openValue, 50 * 0.02);
+  near(rows[0].transferredOutCost, 0.25);
+  near(totals.transferredOutCost, 0.25);
+  near(rows[0].realized, 0.25);
 });
 
 test("a partial sell only realizes the sold share; the rest stays open at cost", () => {

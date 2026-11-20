@@ -73,6 +73,7 @@ main(async () => {
   const usdOf = (n) => (solPrice ? c.dim(` ($${Math.abs(n * solPrice) >= 1000 ? (n * solPrice / 1000).toFixed(1) + "K" : (n * solPrice).toFixed(0)})`) : "");
   console.log(`  ${pad("Realized (cash)", 22)} ${tint(t.realized, c.bold(sol(t.realized) + " SOL"))}${usdOf(t.realized)}`);
   console.log(`  ${pad("Open positions", 22)} cost ${t.openCost.toFixed(3)} SOL, worth ${t.openValue.toFixed(3)} SOL now (${tint(t.unrealized, sol(t.unrealized) + " SOL")} on paper)`);
+  if (t.transferredOutCost > 0.0005) console.log(c.dim(`  ${pad("Transferred out", 22)} ${t.transferredOutCost.toFixed(3)} SOL cost sent away`));
   if (t.unpriced) console.log(c.dim(`  ${pad("", 22)} ${t.unpriced} open position${t.unpriced > 1 ? "s have" : " has"} no price and count as zero.`));
   console.log(`  ${pad("Win rate", 22)} ${t.winRate === null ? "-" : `${t.winRate.toFixed(0)}% (${t.wins} of ${t.closed} tokens sold at a profit)`}`);
   console.log(`  ${pad("Bought / sold", 22)} ${t.spent.toFixed(3)} SOL in, ${t.received.toFixed(3)} SOL out`);
